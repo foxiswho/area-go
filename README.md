@@ -19,3 +19,22 @@ go run $GOPATH/src/github.com/foxiswho/area-go/main.go
 ```
 
 生成后文件：`$GOPATH/src/github.com/foxiswho/area-go/area.js`
+
+输出结果
+```SEHLL
+=======获取数据======
+
+=======获取成功=====
+=======格式化数据=====
+
+=======格式化 扩展数据=====
+=======处理成功=====
+===================
+=======  写入到文件 area.js    ============
+=======  路径: $GOPATH/src/github.com/foxiswho/area-go/area.js    ============
+=======  写入到文件 area.sql    ============
+=======  路径: $GOPATH/src/github.com/foxiswho/area-go/area.sql    ============
+===================
+=======数据保存成功=======
+
+```
