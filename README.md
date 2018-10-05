@@ -15,7 +15,7 @@ go get -u github.com/foxiswho/area-go
 ```
 执行
 ```shell
-go run $GOPATH/src/github.com/foxiswho/area-go/main.go
+go run $GOPATH/src/github.com/foxiswho/area-go/area.go
 ```
 
 生成后文件：`$GOPATH/src/github.com/foxiswho/area-go/area.js`
@@ -37,4 +37,20 @@ go run $GOPATH/src/github.com/foxiswho/area-go/main.go
 ===================
 =======数据保存成功=======
 
+```
+
+
+# 编译成多环境执行文件
+## linux
+```SHELL
+GOOS=linux GOARCH=amd64 go build -o area-linux area.go
+```
+## MAC
+```SHELL
+GOOS=darwin GOARCH=amd64 go build -o area-mac area.go
+```
+
+## Windows
+```SHELL
+GOOS=windows GOARCH=amd64 go build -o area-win area.go
 ```

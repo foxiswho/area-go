@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-const SQL_FILE = "util/sql.sql"
+const SQL_FILE = "file/sql.sql"
 
 var sqlArr = []string{}
 //返回

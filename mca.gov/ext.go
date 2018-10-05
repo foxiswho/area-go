@@ -15,7 +15,7 @@ import (
 var AreaFormatExt map[int]map[int]string
 
 //扩展数据原始文件
-const extFile = "ext.csv"
+const extFile = "file/ext.csv"
 
 func init() {
 
