@@ -24,6 +24,7 @@ const topLevelId = 86
 
 const JSON_FILE = "area.js"
 const SQL_FILE = "area.sql"
+const CSV_FILE = "area.csv"
 
 //数据 获取
 func GetAreaData() {
@@ -161,10 +162,17 @@ func formatExtData() {
 
 func saveSqlFile() {
 	str := ""
-	str = util.GetCreateTableSql()+"\n\n"
+	str = util.GetCreateTableSql() + "\n\n"
 	str += util.MakeSql(areaFormat)
 	//Sql
 	util.SaveFile([]byte(str), SQL_FILE)
+}
+
+func saveCsvFile() {
+	str := ""
+	str += util.MakeCsv(areaFormat)
+	//Sql
+	util.SaveFile([]byte(str), CSV_FILE)
 }
 
 func main() {
@@ -189,6 +197,11 @@ func main() {
 	fmt.Println("=======  写入到文件 " + SQL_FILE + "    ============")
 	fmt.Println("=======  路径: $GOPATH/src/github.com/foxiswho/area-go/" + SQL_FILE + "    ============")
 	saveSqlFile()
+
+	fmt.Println("=======  写入到文件 " + CSV_FILE + "    ============")
+	fmt.Println("=======  路径: $GOPATH/src/github.com/foxiswho/area-go/" + CSV_FILE + "    ============")
+	saveCsvFile()
+
 	fmt.Println("===================")
 	fmt.Println("=======数据保存成功=======")
 }
