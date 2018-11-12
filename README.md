@@ -15,7 +15,8 @@ go get -u github.com/foxiswho/area-go
 ```
 执行
 ```shell
-go run $GOPATH/src/github.com/foxiswho/area-go/area.go
+cd $GOPATH/src/github.com/foxiswho/area-go/
+go run area.go
 ```
 
 生成后文件：`$GOPATH/src/github.com/foxiswho/area-go/area.js`
