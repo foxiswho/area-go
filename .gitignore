@@ -12,3 +12,5 @@
 *.out
 
 .idea
+.csv
+area.sql
