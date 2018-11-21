@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/foxiswho/area-go/mca.gov"
 	"github.com/foxiswho/area-go/consts"
+	"github.com/foxiswho/area-go/mca.gov"
 	"github.com/foxiswho/area-go/stats.gov"
+	"os"
 )
 
 ////// mca stats
@@ -63,6 +64,8 @@ func saveCsvFile() {
 }
 
 func main() {
+	consts.APP_PATH, _ = os.Getwd()
+
 	fmt.Println("=======获取数据======")
 	GetAreaData()
 	fmt.Println("=======获取成功=====")

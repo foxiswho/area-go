@@ -12,6 +12,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -32,13 +33,22 @@ const topLevelId = 86
 const fileSuffix = ".html"
 
 //临时文件名
-const tmp_file_index = "stats.index.html"
+const tmp_file_index_name = "stats.index.html"
 
 //
 var collect_url map[int]string
+//
+var site_path = ""
+var is_test = false
 
 //数据 获取
 func GetAreaData() {
+	path, _ := util.GetCurrentPath()
+	fmt.Println("当前可执行文件路径：", path)
+	fmt.Println("当前可执行文件路径2：", util.GetCurrentPath2())
+	fmt.Println("当前可执行文件路径3：", consts.APP_PATH)
+	//time.Sleep(time.Duration(5) * time.Second)
+
 	getProvince()
 	////
 	fmt.Println("collect_url", collect_url)
@@ -52,11 +62,19 @@ func GetAreaData() {
 			fmt.Println(url)
 		}
 		collect_city := make(map[int]string)
+		i := 1
 		for _, url := range collect_url {
 			data := getCity(url, 2)
+			if is_test {
+				i = i + 1
+				if i > 2 {
+					break
+				}
+			}
 			if data != nil {
 				for key, val := range data {
 					collect_city[key] = val
+
 				}
 			}
 		}
@@ -71,9 +89,17 @@ func GetAreaData() {
 				fmt.Println(url)
 			}
 			collect_district := make(map[int]string)
+			i := 1
 			for _, url := range collect_city {
 				data := getCity(url, 3)
+				if is_test {
+					i = i + 1
+					if i > 2 {
+						break
+					}
+				}
 				if data != nil {
+
 					for key, val := range data {
 						collect_district[key] = val
 					}
@@ -106,8 +132,19 @@ func GetAreaData() {
 
 func getProvince() {
 	input_byte := []byte{}
+	//检查目录是否已创建
+	is_dir, _ := util.PathExists(consts.APP_PATH + consts.TMP_DIR)
+	if false == is_dir {
+		// 创建文件夹
+		err := os.Mkdir(consts.APP_PATH+consts.TMP_DIR, os.ModePerm)
+		if err == nil {
+			fmt.Printf("mkdir success!\n")
+		}
+	}
+	tmp_index_file := consts.APP_PATH + consts.TMP_DIR + "/" + tmp_file_index_name
+	fmt.Println("首页文件路径：", tmp_index_file)
 	//
-	is_file, _ := util.PathExists(tmp_file_index)
+	is_file, _ := util.PathExists(tmp_index_file)
 	if false == is_file {
 		aConv, err := iconv.NewConverter("GBK", "utf-8")
 		if err != nil {
@@ -136,11 +173,11 @@ func getProvince() {
 		}
 		str, err := aConv.ConvertString(string(input))
 		fmt.Println("字符：", str)
-		util.SaveFile([]byte(str), tmp_file_index)
+		util.SaveFile([]byte(str), tmp_index_file)
 
 		input_byte = []byte(str)
 	} else {
-		b, err := ioutil.ReadFile(tmp_file_index)
+		b, err := ioutil.ReadFile(tmp_index_file)
 		if err != nil {
 			fmt.Print(err)
 		}
@@ -169,6 +206,7 @@ func getProvince() {
 	files := SITE
 	paths, fileName := filepath.Split(files)
 	fmt.Println("路径：", paths, " 文件名：", fileName)
+	site_path = paths
 
 	doc.Find(".provincetable").Find("a").Each(func(i int, item *goquery.Selection) {
 		link, _ := item.Eq(0).Attr("href")
@@ -190,40 +228,73 @@ func getProvince() {
 }
 
 func getCity(url string, level int) map[int]string {
-	fmt.Println("Sleep 2 Second begin")
-	time.Sleep(time.Duration(1) * time.Second)
-	fmt.Println("end")
-	//
-	fmt.Println("级别：", level)
-	fmt.Println("级别：", level)
-	fmt.Println("级别：", level)
-	fmt.Println("级别：", level)
-	fmt.Println("级别：", level)
-	fmt.Println("级别：", level)
-	fmt.Println("级别：", level)
-	fmt.Println("级别：", level)
-	aConv, err := iconv.NewConverter("GBK", "utf-8")
-	if err != nil {
-		fmt.Println("iconv.Open failed!")
-		return nil
+
+	fmt.Println("url：", url)
+	paths, fileName := filepath.Split(url)
+	paths2 := strings.Replace(paths, site_path, "", -1)
+	fmt.Println("路径：", paths2, " 文件名：", fileName)
+	tmp_path := consts.APP_PATH + consts.TMP_DIR + "/" + paths2
+	//检查目录是否已创建
+	is_dir, _ := util.PathExists(tmp_path)
+	if false == is_dir {
+		// 创建文件夹
+		err := os.Mkdir(tmp_path, os.ModePerm)
+		if err == nil {
+			fmt.Printf("mkdir success!\n")
+		}
 	}
-	defer aConv.Close()
-	fmt.Println("URL:", url)
-	res, err := http.Get(url)
-	if err != nil {
-		log.Fatal(err)
-		return nil
+	input_byte := []byte{}
+	fmt.Println("文件是否存在，文件地址：", tmp_path+fileName)
+	//检查文件是否已存在
+	is_file, _ := util.PathExists(tmp_path + fileName)
+	if false == is_file {
+		fmt.Println("Sleep 2 Second begin")
+		time.Sleep(time.Duration(1) * time.Second)
+		fmt.Println("end")
+		//
+		fmt.Println("级别：", level)
+		fmt.Println("级别：", level)
+		fmt.Println("级别：", level)
+		fmt.Println("级别：", level)
+		fmt.Println("级别：", level)
+		fmt.Println("级别：", level)
+		fmt.Println("级别：", level)
+		fmt.Println("级别：", level)
+		aConv, err := iconv.NewConverter("GBK", "utf-8")
+		if err != nil {
+			fmt.Println("iconv.Open failed!")
+			return nil
+		}
+		defer aConv.Close()
+		fmt.Println("URL:", url)
+		res, err := http.Get(url)
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+		defer res.Body.Close()
+		if res.StatusCode != 200 {
+			log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		}
+		input, err := ioutil.ReadAll(res.Body)
+		str, err := aConv.ConvertString(string(input))
+		//fmt.Println("字符：", str)
+		util.SaveFile([]byte(str), tmp_path+fileName)
+
+		input_byte = []byte(str)
+	} else {
+		fmt.Println("文件已存在，直接读取该文件：", tmp_path+fileName)
+		b, err := ioutil.ReadFile(tmp_path + fileName)
+		if err != nil {
+			fmt.Print(err)
+		}
+		input_byte = b
 	}
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
-	}
-	input, err := ioutil.ReadAll(res.Body)
-	str, err := aConv.ConvertString(string(input))
+
 	//fmt.Println("body::::", str)
 	//i, err := res.Body.Read([]byte(str))
 	//fmt.Println(i, err)
-	reader := bytes.NewReader([]byte(str))
+	reader := bytes.NewReader(input_byte)
 	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(reader)
 	if err != nil {
@@ -231,8 +302,6 @@ func getCity(url string, level int) map[int]string {
 	}
 	//fmt.Println(doc)
 	//area = make(map[int]string)
-	files := url
-	paths, fileName := filepath.Split(files)
 	fmt.Println("路径：", paths, " 文件名：", fileName)
 	data_url := make(map[int]string)
 	select_str := ".provincetable"

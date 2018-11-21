@@ -2,11 +2,14 @@ package util
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -64,4 +67,42 @@ func ObjToJson(obj interface{}) []byte {
 		fmt.Println("序列化失败:", err)
 	}
 	return str
+}
+
+func GetCurrentPath() (string, error) {
+	file, err := exec.LookPath(os.Args[0])
+	if err != nil {
+		return "", err
+	}
+	path, err := filepath.Abs(file)
+	if err != nil {
+		return "", err
+	}
+	i := strings.LastIndex(path, "/")
+	if i < 0 {
+		i = strings.LastIndex(path, "\\")
+	}
+	if i < 0 {
+		return "", errors.New(`error: Can't find "/" or "\".`)
+	}
+	return string(path[0 : i+1]), nil
+}
+
+func GetCurrentPath2() string {
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		panic(errors.New("Can not get current file info"))
+	}
+	path, err := filepath.Abs(file)
+	if err != nil {
+		panic(err)
+	}
+	i := strings.LastIndex(path, "/")
+	if i < 0 {
+		i = strings.LastIndex(path, "\\")
+	}
+	if i < 0 {
+		panic(errors.New(`error: Can't find "/" or "\".`))
+	}
+	return string(path[0 : i+1])
 }
