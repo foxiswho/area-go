@@ -9,7 +9,7 @@ import (
 )
 
 ////// mca stats
-var SELECT_TYPE = "mca"
+var SELECT_TYPE = "stats"
 
 //数据 获取
 func GetAreaData() {
@@ -27,6 +27,7 @@ func FormatArea() {
 		mca_gov.FormatArea()
 	} else {
 		//FIX ME
+		stats_gov.FormatArea()
 	}
 }
 
@@ -35,6 +36,7 @@ func saveFile() {
 		mca_gov.SaveFile()
 	} else {
 		//FIX ME
+		stats_gov.SaveFile()
 	}
 }
 
@@ -44,6 +46,7 @@ func FormatExtData() {
 		mca_gov.FormatExtData()
 	} else {
 		//FIX ME
+		stats_gov.FormatExtData()
 	}
 }
 
@@ -52,6 +55,7 @@ func saveSqlFile() {
 		mca_gov.SaveSqlFile()
 	} else {
 		//FIX ME
+		stats_gov.SaveSqlFile()
 	}
 }
 
@@ -60,6 +64,7 @@ func saveCsvFile() {
 		mca_gov.SaveCsvFile()
 	} else {
 		//FIX ME
+		stats_gov.SaveCsvFile()
 	}
 }
 
@@ -81,15 +86,18 @@ func main() {
 	//
 	fmt.Println("=======  写入到文件 " + consts.JSON_FILE + "    ============")
 	fmt.Println("=======  路径: $GOPATH/src/github.com/foxiswho/area-go/" + consts.JSON_FILE + "    ============")
+	fmt.Println("=======  正在写入中…… ")
 	//
 	saveFile()
 	//
 	fmt.Println("=======  写入到文件 " + consts.SQL_FILE + "    ============")
 	fmt.Println("=======  路径: $GOPATH/src/github.com/foxiswho/area-go/" + consts.SQL_FILE + "    ============")
+	fmt.Println("=======  正在写入中…… ")
 	saveSqlFile()
 
 	fmt.Println("=======  写入到文件 " + consts.CSV_FILE + "    ============")
 	fmt.Println("=======  路径: $GOPATH/src/github.com/foxiswho/area-go/" + consts.CSV_FILE + "    ============")
+	fmt.Println("=======  正在写入中…… ")
 	saveCsvFile()
 
 	fmt.Println("===================")

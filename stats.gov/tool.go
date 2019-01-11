@@ -2,6 +2,7 @@ package stats_gov
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/djimenez/iconv-go"
@@ -35,11 +36,19 @@ const fileSuffix = ".html"
 //临时文件名
 const tmp_file_index_name = "stats.index.html"
 
+//暂停爬取秒数
+const pause_second_web_crawler = 1
+
 //
 var collect_url map[int]string
 //
 var site_path = ""
 var is_test = false
+//是否使用 指定测试URL
+var is_test_url = false
+//没有获取到数据的连接
+var url_data_null = []string{}
+var city_is_over = false
 
 //数据 获取
 func GetAreaData() {
@@ -50,6 +59,7 @@ func GetAreaData() {
 	//time.Sleep(time.Duration(5) * time.Second)
 
 	getProvince()
+
 	////
 	fmt.Println("collect_url", collect_url)
 	if len(collect_url) > 0 {
@@ -62,22 +72,42 @@ func GetAreaData() {
 			fmt.Println(url)
 		}
 		collect_city := make(map[int]string)
-		i := 1
-		for _, url := range collect_url {
+		//是否指定读取URL
+		if is_test_url {
+			url := "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/44.html"
 			data := getCity(url, 2)
-			if is_test {
-				i = i + 1
-				if i > 2 {
-					break
-				}
-			}
 			if data != nil {
 				for key, val := range data {
 					collect_city[key] = val
-
+				}
+			}
+		} else {
+			i := 1
+			for _, url := range collect_url {
+				data := getCity(url, 2)
+				if is_test {
+					i = i + 1
+					if i > 2 {
+						break
+					}
+				}
+				if data != nil {
+					for key, val := range data {
+						collect_city[key] = val
+					}
+				}
+				if data == nil {
+					url_data_null = append(url_data_null, url)
+				} else if len(data) == 0 {
+					url_data_null = append(url_data_null, url)
 				}
 			}
 		}
+
+		//fmt.Println("collect_city:", collect_city)
+		//fmt.Println("area:", area)
+		//return
+
 		if len(collect_city) > 0 {
 			fmt.Println("第3级：")
 			fmt.Println("第3级：")
@@ -89,22 +119,42 @@ func GetAreaData() {
 				fmt.Println(url)
 			}
 			collect_district := make(map[int]string)
-			i := 1
-			for _, url := range collect_city {
-				data := getCity(url, 3)
-				if is_test {
-					i = i + 1
-					if i > 2 {
-						break
-					}
-				}
-				if data != nil {
 
+			//是否指定读取URL
+			if is_test_url {
+				url := "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/44/4419.html"
+				data := getCity(url, 3)
+				if data != nil {
 					for key, val := range data {
 						collect_district[key] = val
 					}
 				}
+			} else {
+				i := 1
+				for _, url := range collect_city {
+					data := getCity(url, 3)
+					if is_test {
+						i = i + 1
+						if i > 2 {
+							break
+						}
+					}
+					if data != nil {
+						for key, val := range data {
+							collect_district[key] = val
+						}
+					}
+					if data == nil {
+						url_data_null = append(url_data_null, url)
+					} else if len(data) == 0 {
+						url_data_null = append(url_data_null, url)
+					}
+				}
 			}
+
+			//fmt.Println("collect_district:", collect_district)
+			//fmt.Println("area:", area)
+			//return
 			if len(collect_district) > 0 {
 				fmt.Println("第4级：")
 				fmt.Println("第4级：")
@@ -119,15 +169,41 @@ func GetAreaData() {
 				for key, value := range area {
 					fmt.Println(key, "=:::", value)
 				}
-				for _, url := range collect_district {
+				//是否指定读取URL
+				if is_test_url {
+					url := "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/44/19/441900104.html"
 					data := getCity(url, 4)
-					fmt.Println("第4级：", data)
+					if data != nil {
+						for key, val := range data {
+							collect_district[key] = val
+						}
+					}
+				} else {
+					for _, url := range collect_district {
+						city_is_over = false
+						data := getCity(url, 4)
+						fmt.Println("第4级：", data)
+						if city_is_over == false {
+							if data == nil {
+								url_data_null = append(url_data_null, url)
+							} else if len(data) == 0 {
+								url_data_null = append(url_data_null, url)
+							}
+						}
+					}
 				}
+
 			}
 		}
 	}
 	fmt.Println(len(area))
 	fmt.Println("area:", area)
+	fmt.Println("url data null")
+	fmt.Println("url data null")
+	fmt.Println("url data null")
+	fmt.Println("url data null")
+	fmt.Println("url data null")
+	fmt.Println("url_data_null:", url_data_null)
 }
 
 func getProvince() {
@@ -216,14 +292,14 @@ func getProvince() {
 		fmt.Println("文件去除后缀：", file)
 		if len(file) > 0 {
 			key, _ := strconv.Atoi(file)
-			area[key*10] = item.Eq(0).Text()
+			area[key] = item.Eq(0).Text()
 			areaSort = append(areaSort, key)
 			//
 			collect_url[key] = paths + link
 		}
 
 	})
-	//fmt.Println(area)
+	fmt.Println("area:", area)
 	fmt.Println(len(area))
 }
 
@@ -244,13 +320,15 @@ func getCity(url string, level int) map[int]string {
 		}
 	}
 	input_byte := []byte{}
-	fmt.Println("文件是否存在，文件地址：", tmp_path+fileName)
+	fmt.Println("准备爬取的文件地址：", tmp_path+fileName)
 	//检查文件是否已存在
 	is_file, _ := util.PathExists(tmp_path + fileName)
 	if false == is_file {
-		fmt.Println("Sleep 2 Second begin")
-		time.Sleep(time.Duration(1) * time.Second)
+		fmt.Println("暂停 %d 秒后后开始爬取", pause_second_web_crawler)
+		fmt.Println("Sleep %d Second begin", pause_second_web_crawler)
+		time.Sleep(time.Duration(pause_second_web_crawler) * time.Second)
 		fmt.Println("end")
+		fmt.Println("开始爬取该URl")
 		//
 		fmt.Println("级别：", level)
 		fmt.Println("级别：", level)
@@ -279,14 +357,27 @@ func getCity(url string, level int) map[int]string {
 		input, err := ioutil.ReadAll(res.Body)
 		str, err := aConv.ConvertString(string(input))
 		//fmt.Println("字符：", str)
-		util.SaveFile([]byte(str), tmp_path+fileName)
+		fmt.Println("爬取完成")
+		fmt.Println("检测文件数据")
+		if len(str) > 100 {
+			fmt.Println("保存文件:", tmp_path+fileName)
+			util.SaveFile([]byte(str), tmp_path+fileName)
+			input_byte = []byte(str)
+		} else {
+			fmt.Println("文件数据错误")
+			return nil
+		}
 
-		input_byte = []byte(str)
 	} else {
 		fmt.Println("文件已存在，直接读取该文件：", tmp_path+fileName)
 		b, err := ioutil.ReadFile(tmp_path + fileName)
 		if err != nil {
 			fmt.Print(err)
+		}
+		if len(b) < 100 {
+			fmt.Println("文件数据错误:", tmp_path+fileName)
+			os.Remove(tmp_path + fileName)
+			return nil
 		}
 		input_byte = b
 	}
@@ -308,21 +399,79 @@ func getCity(url string, level int) map[int]string {
 	if level == 2 {
 		select_str = ".citytable"
 	} else if level == 3 {
-		select_str = ".towntable"
+		// 第三级   市下面的 区县
+		select_str = ".countytable"
 	} else if level == 4 {
+		select_str = ".towntable"
+	} else if level == 5 {
 		select_str = ".villagetable"
 	}
+	//海南
+	if level == 3 && doc.Find(select_str).Find("tr").Nodes == nil {
+		level = 4
+		select_str = ".towntable"
+	} else if level == 4 && doc.Find(select_str).Find("tr").Nodes == nil {
+		//中山
+		level = 5
+		select_str = ".villagetable"
+		city_is_over = true
+	}
+	//是否最后一级，居委会，如果是，不再执行后续
+	is_villagetable := false
 	doc.Find(select_str).Find("tr").Each(func(i int, item *goquery.Selection) {
+		//if is_villagetable {
+		//	return
+		//}
 		str := item.Find("td").Eq(0).Find("a").Text()
 		value := item.Find("td").Eq(1).Text()
 		link := ""
-		key := ""
-		if str == "" {
+		key := item.Find("td").Eq(0).Text()
+		if key == "统计用区划代码" {
+			//跳过第一行标题
+			return
+		}
+		//key = item.Find("td").Eq(1).Text()
+		//if key == "城乡分类代码" {
+		//	//跳过
+		//	is_villagetable = true
+		//	return
+		//}
+
+		//第4级
+		if level == 4 {
+			key = item.Find("td").Eq(0).Text()
+			value = item.Find("td").Eq(1).Text()
+			link, _ = item.Find("td").Eq(0).Find("a").Attr("href")
+			// 去除文件名后缀
+			fmt.Println("link：", link)
+			file := strings.TrimSuffix(link, fileSuffix)
+			fmt.Println("文件去除后缀：", file)
+			fmt.Println(key, " = ", value)
+
+			if len(file) > 0 {
+				key_int, _ := strconv.Atoi(key)
+				key_int = formatKeyint(level, key_int)
+				area[key_int] = value
+				areaSort = append(areaSort, key_int)
+				//
+				data_url[key_int] = paths + link
+				//collect_url[key] = paths + "/" + link
+			}
+		} else if level == 5 {
+			key = item.Find("td").Eq(0).Text()
+			value = item.Find("td").Eq(2).Text()
+			fmt.Println(key, " = ", value)
+			key_int, _ := strconv.Atoi(key)
+			key_int = formatKeyint(level, key_int)
+			area[key_int] = value
+			areaSort = append(areaSort, key_int)
+		} else if str == "" {
 			str = item.Find("td").Eq(0).Text()
 			if str != "" {
 				match, _ := regexp.MatchString(`\d`, str)
 				if match {
 					key_int, _ := strconv.Atoi(str)
+					key_int = formatKeyint(level, key_int)
 					area[key_int] = value
 					fmt.Println("市辖区：", str, area[key_int])
 				}
@@ -344,6 +493,7 @@ func getCity(url string, level int) map[int]string {
 			fmt.Println("文件去除后缀：", file)
 			if len(file) > 0 {
 				key_int, _ := strconv.Atoi(key)
+				key_int = formatKeyint(level, key_int)
 				area[key_int] = value
 				areaSort = append(areaSort, key_int)
 				//
@@ -353,6 +503,9 @@ func getCity(url string, level int) map[int]string {
 		}
 
 	})
+	if is_villagetable {
+		return nil
+	}
 	if len(data_url) < 1 {
 		return nil
 	}
@@ -361,60 +514,96 @@ func getCity(url string, level int) map[int]string {
 	return data_url
 }
 
+func formatKeyint(level, key_int int) int {
+	if level == 2 {
+		key_int = key_int / 1000000
+	} else if level == 3 {
+		key_int = key_int / 1000
+	}
+	return key_int
+}
+
 //格式化数据
 func FormatArea() {
 	//初始化
 	areaFormat = make(map[int]map[int]string)
+	areaFormat[topLevelId] = make(map[int]string)
 	//
 	for index := range areaSort {
 		key := areaSort[index]
 		value := area[key]
-		modTmp := key % 1000
+
+		fmt.Println("key:", key)
+		fmt.Println("value:", value)
 		//省份
-		if modTmp == 0 {
+		if key < 1000 {
 			//是否初始化
 			if areaFormat[topLevelId] == nil {
 				areaFormat[topLevelId] = make(map[int]string)
 			}
 			maps := areaFormat[topLevelId]
-			maps[key] = value
+			maps[key*10*1000] = value
 			areaFormat[topLevelId] = maps
 			//直辖市处理
-			formatMunicipality(key)
-		} else { //市县
-			modCity := modTmp % 100
-			//市
-			if modCity == 0 {
-				tmp := math.Floor(float64(key) / 1000)
-				province := int(tmp) * 1000
-				if areaFormat[province] == nil {
-					areaFormat[province] = make(map[int]string)
-				}
-				maps := areaFormat[province]
-				maps[key] = value
-				areaFormat[province] = maps
-			} else {
-				//县区
-				tmp := math.Floor(float64(key) / 100)
-				city := int(tmp) * 100
-				if areaFormat[city] == nil {
-					areaFormat[city] = make(map[int]string)
-				}
-				maps := areaFormat[city]
-				maps[key] = value
-				areaFormat[city] = maps
+			formatMunicipality(key * 10 * 1000)
+		} else if key < 1000000 {
+			// 省下的市
+			fmt.Println("市县 key:", key)
+			tmp := math.Floor(float64(key) / 10000)
+			//获得 上级省
+			city := int(tmp) * 10000
+			if areaFormat[city] == nil {
+				areaFormat[city] = make(map[int]string)
 			}
+			maps := areaFormat[city]
+			maps[key] = value
+			areaFormat[city] = maps
+
+		} else {
+			// 市下的 县
+			fmt.Println("乡镇 key:", key)
+			street := float64(key) / 1000
+			street_tmp := math.Floor(street)
+			value = strings.Replace(value, "居民委员会", "", -1)
+			value = strings.Replace(value, "办事处", "", -1)
+			//如果相等，表示该 是乡镇  不是村
+			if street == street_tmp {
+				//乡镇
+				tmp := math.Floor(street_tmp / 1000)
+				//获得 上级市
+				parent := int(tmp)
+				if areaFormat[parent] == nil {
+					areaFormat[parent] = make(map[int]string)
+				}
+				maps := areaFormat[parent]
+				maps[int(street_tmp)] = value
+				areaFormat[parent] = maps
+			} else {
+				//村
+				fmt.Println("村 key:", key)
+				tmp := math.Floor(float64(key) / 1000)
+				//获得 上级县
+				parent := int(tmp)
+				if areaFormat[parent] == nil {
+					areaFormat[parent] = make(map[int]string)
+				}
+				maps := areaFormat[parent]
+				maps[key] = value
+				areaFormat[parent] = maps
+			}
+
 		}
 		//break
 	}
-
-	//fmt.Println(areaFormat)
+	fmt.Println("area:", area)
+	fmt.Println("areaSort:", areaSort)
+	fmt.Println("areaFormat:", areaFormat)
 	fmt.Println(len(areaFormat))
-	//str, err := json.Marshal(&areaFormat)
-	//if err != nil {
-	//	fmt.Println("序列化失败:", err)
-	//}
-	//fmt.Println("JSON:", str)
+	str, err := json.Marshal(&areaFormat)
+	if err != nil {
+		fmt.Println("序列化失败:", err)
+	}
+	fmt.Println("JSON:", str)
 }
 
 //直辖市处理
@@ -435,6 +624,8 @@ func formatMunicipality(id int) {
 		maps[city] = ok
 		areaFormat[province] = maps
 	}
+	fmt.Println("formatMunicipality city:", city)
+	fmt.Println("formatMunicipality province:", province)
 }
 
 func SaveFile() {
@@ -447,10 +638,20 @@ func SaveFile() {
 func FormatExtData() {
 	//
 	mca_gov.ReadExt()
+	fmt.Printf("AreaFormatExt:", mca_gov.AreaFormatExt)
 	//
+	tmpMap := make(map[int]string)
 	for key, _ := range mca_gov.AreaFormatExt {
 		if key > 86 {
 			areaFormat[key] = mca_gov.AreaFormatExt[key]
+		}
+		if key == 86 {
+			tmpMap = mca_gov.AreaFormatExt[key]
+			maps := areaFormat[topLevelId]
+			for k, v := range tmpMap {
+				maps[k] = v
+			}
+			areaFormat[topLevelId] = maps
 		}
 	}
 
