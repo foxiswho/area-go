@@ -1,6 +1,12 @@
 # area-go
 国家省市区获取
 
+根据 国家统计局 2017年统计用区划代码和城乡划分代码(截止2017年10月31日)
+
+http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/
+
+生成的 省市区 JS SQL
+
 ## 中国行政区划代码 (这里选择是)
 http://www.mca.gov.cn/article/sj/xzqh/
 
