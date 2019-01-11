@@ -5,7 +5,9 @@
 
 http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/
 
-生成的 省市区 JS SQL
+生成的 省市区 JS SQL `area.csv`,`area.sql`,`area.js`
+
+更新日期 2019-1-11日
 
 ## 中国行政区划代码 (这里选择是)
 http://www.mca.gov.cn/article/sj/xzqh/
