@@ -74,7 +74,7 @@ func GetAreaData() {
 		collect_city := make(map[int]string)
 		//是否指定读取URL
 		if is_test_url {
-			url := "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/44.html"
+			url := "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2018/11.html"
 			data := getCity(url, 2)
 			if data != nil {
 				for key, val := range data {
@@ -122,7 +122,7 @@ func GetAreaData() {
 
 			//是否指定读取URL
 			if is_test_url {
-				url := "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/44/4419.html"
+				url := "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2018/11/1101.html"
 				data := getCity(url, 3)
 				if data != nil {
 					for key, val := range data {
@@ -489,6 +489,11 @@ func getCity(url string, level int) map[int]string {
 
 			//fmt.Println(link, " = ", value)
 			fmt.Println(key, " = ", value)
+			//if level == 2 {
+			//	key = Substr(key, 0, 5)
+			//	fmt.Println(" 字符串截取后的 ", key)
+			//}
+
 			// 去除文件名后缀
 			file := strings.TrimSuffix(link, fileSuffix)
 			fmt.Println("文件去除后缀：", file)
@@ -511,6 +516,9 @@ func getCity(url string, level int) map[int]string {
 		return nil
 	}
 	//fmt.Println(area)
+	//fmt.Println("============")
+	//fmt.Println("============")
+	//fmt.Println("============")
 	fmt.Println(len(area))
 	return data_url
 }
@@ -569,10 +577,19 @@ func FormatArea() {
 			value = strings.Replace(value, "办事处", "", -1)
 			//如果相等，表示该 是乡镇  不是村
 			if street == street_tmp {
+				tmp :=street_tmp
 				//乡镇
-				tmp := math.Floor(street_tmp / 1000)
+				tmp = math.Floor(street_tmp / 1000)
+				//if len(strconv.Itoa(int(street_tmp)))>6 {
+				//	//乡镇
+				//	tmp = math.Floor(street_tmp / 1000)
+				//}
 				//获得 上级市
 				parent := int(tmp)
+				if len(strconv.Itoa(parent))==3 {
+					tmp = math.Floor(street_tmp / 10)*10
+					parent = int(tmp)
+				}
 				if areaFormat[parent] == nil {
 					areaFormat[parent] = make(map[int]string)
 				}
@@ -604,7 +621,7 @@ func FormatArea() {
 	if err != nil {
 		fmt.Println("序列化失败:", err)
 	}
-	fmt.Println("JSON:", str)
+	fmt.Println("JSON:", string(str))
 }
 
 //直辖市处理
@@ -677,4 +694,20 @@ func SaveCsvFile() {
 	str += util.MakeCsv(areaFormat)
 	//Sql
 	util.SaveFile([]byte(str), consts.CSV_FILE)
+}
+
+//截取字符串 start 起点下标 end 终点下标(不包括)
+func Substr(str string, start int, end int) string {
+	rs := []rune(str)
+	length := len(rs)
+
+	if start < 0 || start > length {
+		panic("start is wrong")
+	}
+
+	if end < 0 || end > length {
+		panic("end is wrong")
+	}
+
+	return string(rs[start:end])
 }
