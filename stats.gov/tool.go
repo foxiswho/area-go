@@ -22,7 +22,7 @@ import (
 )
 
 //被爬地址
-const SITE = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2017/index.html"
+const SITE = "http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2018/index.html"
 
 //存储变量
 var area map[int]string
@@ -324,8 +324,9 @@ func getCity(url string, level int) map[int]string {
 	//检查文件是否已存在
 	is_file, _ := util.PathExists(tmp_path + fileName)
 	if false == is_file {
-		fmt.Println("暂停 %d 秒后后开始爬取", pause_second_web_crawler)
-		fmt.Println("Sleep %d Second begin", pause_second_web_crawler)
+
+		fmt.Println(fmt.Sprintf("暂停 %d 秒后后开始爬取", pause_second_web_crawler))
+		fmt.Println(fmt.Sprintf("Sleep %d Second begin", pause_second_web_crawler))
 		time.Sleep(time.Duration(pause_second_web_crawler) * time.Second)
 		fmt.Println("end")
 		fmt.Println("开始爬取该URl")
@@ -632,6 +633,9 @@ func SaveFile() {
 	str := util.ObjToJson(&areaFormat)
 	//
 	util.SaveFile(str, consts.JSON_FILE)
+	str2 := string(str)
+	byte2 := []byte("module.exports=" + str2)
+	util.SaveFile(byte2, consts.JSON_FILE_VUE)
 }
 
 //扩展数据填充
