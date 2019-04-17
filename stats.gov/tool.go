@@ -561,6 +561,49 @@ func FormatArea() {
 			tmp := math.Floor(float64(key) / 10000)
 			//获得 上级省
 			city := int(tmp) * 10000
+			////省辖区   河南
+			if key == 419000 {
+				//省直辖县级行政区划 直接跳过
+				continue
+			} else if key == 429000 {
+				//省辖区 湖北
+				//省直辖县级行政区划 直接跳过
+				continue
+			} else if city == 429000 {
+				//省辖区 湖北
+				city = 420000
+			} else if key == 469000 {
+				//省辖区 海南
+				//省直辖县级行政区划 直接跳过
+				continue
+			}else if city == 469000 {
+				//省辖区 海南
+				city = 460000
+			}else if key == 500100 {
+				//市辖区 重庆
+				//continue
+				value="重庆市"
+			}else if key == 500200 {
+				//市辖区 重庆
+				continue
+			//}else if city == 500100 {
+			//	//市辖区 重庆
+			//	city = 500000
+			}else if city == 500200 {
+				//市辖区 重庆
+				city = 500100
+			}else if key == 110100 {
+				//市辖区
+				value="北京市"
+			}else if key == 120100 {
+				//市辖区
+				value="天津市"
+			}else if key == 310100 {
+				//市辖区
+				value="上海市"
+			}
+
+
 			if areaFormat[city] == nil {
 				areaFormat[city] = make(map[int]string)
 			}
@@ -577,7 +620,7 @@ func FormatArea() {
 			value = strings.Replace(value, "办事处", "", -1)
 			//如果相等，表示该 是乡镇  不是村
 			if street == street_tmp {
-				tmp :=street_tmp
+				tmp := street_tmp
 				//乡镇
 				tmp = math.Floor(street_tmp / 1000)
 				//if len(strconv.Itoa(int(street_tmp)))>6 {
@@ -586,9 +629,20 @@ func FormatArea() {
 				//}
 				//获得 上级市
 				parent := int(tmp)
-				if len(strconv.Itoa(parent))==3 {
-					tmp = math.Floor(street_tmp / 10)*10
+				if len(strconv.Itoa(parent)) == 3 {
+					tmp = math.Floor(street_tmp/100) * 100
 					parent = int(tmp)
+				}
+				////省辖区   河南
+				if parent == 429000 {
+					//省辖区 湖北
+					parent = 420000
+				}else if parent == 469000 {
+					//省辖区 海南
+					parent = 460000
+				}else if parent == 500200 {
+					//市辖区 重庆
+					parent = 500100
 				}
 				if areaFormat[parent] == nil {
 					areaFormat[parent] = make(map[int]string)
@@ -602,6 +656,17 @@ func FormatArea() {
 				tmp := math.Floor(float64(key) / 1000)
 				//获得 上级县
 				parent := int(tmp)
+				////省辖区   河南
+				if parent == 429000 {
+					//省辖区 湖北
+					parent = 420000
+				}else if parent == 469000 {
+					//省辖区 海南
+					parent = 460000
+				}else if parent == 500200 {
+					//市辖区 重庆
+					parent = 500100
+				}
 				if areaFormat[parent] == nil {
 					areaFormat[parent] = make(map[int]string)
 				}
