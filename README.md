@@ -3,6 +3,8 @@
 
 根据 国家统计局 2018年统计用区划代码和城乡划分代码(截止2018年10月31日)
 
+http://www.stats.gov.cn/sj/tjbz/qhdm/
+
 http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2018/
 
 生成的 省市区 JS SQL `area.csv`,`area.sql`,`area.js`
